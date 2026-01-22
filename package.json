@@ -8,7 +8,7 @@
     "start": "node src/index.js",
     "test": "node --test src/tests/*.test.js",
     "lint": "echo 'Running linter...' && node src/index.js",
-    "build": "echo 'Building project...' && node src/index.js"
+    "build": "node -e \"require('fs').mkdirSync('dist', {recursive: true}); require('fs').copyFileSync('src/index.js', 'dist/index.js'); console.log('Build complete!')\""
   },
   "keywords": ["ci", "cd", "github-actions", "demo"],
   "author": "Your Name",
