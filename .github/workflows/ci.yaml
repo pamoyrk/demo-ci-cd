@@ -6,54 +6,55 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
+    # Allow manual trigger
 
 jobs:
   # ============= CI JOB: Build, Lint, Test =============
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    
+
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+    # Step 2: Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: npm install
 
-      # Step 4: Run linter
-      - name: Run linter
-        run: npm run lint
-        continue-on-error: true  # Don't fail if linting has warnings
+    # Step 4: Run linter
+    - name: Run linter
+      run: npm run lint
+      continue-on-error: true # Don't fail if linting has warnings
 
-      # Step 5: Run tests
-      - name: Run tests
-        run: npm test
+    # Step 5: Run tests
+    - name: Run tests
+      run: npm test
 
-      # Step 6: Build project
-      - name: Build project
-        run: npm run build
+    # Step 6: Build project
+    - name: Build project
+      run: npm run build
 
-      # Step 7: Upload build artifacts
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-files
-          path: dist/
-          retention-days: 5
+    # Step 7: Upload build artifacts
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: dist/
+        retention-days: 5
 
-      # Step 8: Success notification
-      - name: CI Success
-        run: echo "✅ CI Pipeline completed successfully!"
+    # Step 8: Success notification
+    - name: CI Success
+      run: echo "✅ CI Pipeline completed successfully!"
 
   # ============= CD JOB: Deploy to Production =============
   deploy:
@@ -62,45 +63,45 @@ jobs:
     runs-on: ubuntu-latest
     # Only deploy on successful push to main, not on PRs
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Step 1: Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      # Step 2: Download build artifacts
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-files
-          path: dist/
+    # Step 2: Download build artifacts
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-files
+        path: dist/
 
-      # Step 3: Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          cname: ''  # Remove if you have a custom domain
+    # Step 3: Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        cname: '' # Remove if you have a custom domain
 
-      # Step 4: Deployment notification
-      - name: Deployment Success
-        run: echo "🚀 Successfully deployed to GitHub Pages!"
+    # Step 4: Deployment notification
+    - name: Deployment Success
+      run: echo "🚀 Successfully deployed to GitHub Pages!"
 
-      # Step 5: Create deployment status
-      - name: Create deployment status
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.ref,
-              environment: 'production',
-              description: 'Deployment from GitHub Actions',
-              required_contexts: [],
-              auto_merge: false,
-              production_environment: true
-            }).then(deployment => {
-              console.log('✅ Deployment created:', deployment.data);
-            });
+    # Step 5: Create deployment status
+    - name: Create deployment status
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.createDeployment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.ref,
+            environment: 'production',
+            description: 'Deployment from GitHub Actions',
+            required_contexts: [],
+            auto_merge: false,
+            production_environment: true
+          }).then(deployment => {
+            console.log('✅ Deployment created:', deployment.data);
+          });
