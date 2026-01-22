@@ -1,5 +1,11 @@
 name: CI/CD Pipeline
 
+# Required for GitHub Pages deployment (allows the action to push to gh-pages)
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 # Trigger conditions
 on:
   push:
